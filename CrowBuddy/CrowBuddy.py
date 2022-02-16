@@ -6,6 +6,7 @@ import numpy as np
 from PIL import Image
 import time
 import tflite_runtime.interpreter as tflite
+import RPi.GPIO as GPIO
 
 EXPORT_MODEL_VERSION = 1
 
@@ -116,12 +117,33 @@ if __name__ == "__main__":
         ret, frame = vid.read()
   
         # Display the resulting frame
-        cv2.imshow('frame', frame)
+        # cv2.imshow('frame', frame)
 
         color_coverted = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         pil_image=Image.fromarray(color_coverted)
         outputs = model.predict(pil_image)
-        print(f"Predicted: {outputs}")
+        # print(f"Predicted: {outputs}")
+        label = outputs['predictions'][0]['label']
+        if label == "Trash": 
+            # print("Trash")
+            gpio_pin = 23
+            GPIO.setwarnings(False)
+            GPIO.setmode(GPIO.BCM)
+            GPIO.setup(gpio_pin, GPIO.OUT)
+            GPIO.output(gpio_pin, True)
+            time.sleep(0.1)
+            GPIO.output(gpio_pin, False)
+        elif label == "Nature":
+            # print("Nature")
+            gpio_pin = 27
+            GPIO.setwarnings(False)
+            GPIO.setmode(GPIO.BCM)
+            GPIO.setup(gpio_pin, GPIO.OUT)
+            GPIO.output(gpio_pin, True)
+            time.sleep(0.1)
+            GPIO.output(gpio_pin, False)
+        
+        time.sleep(1)
         # the 'q' button is set as the
         # quitting button you may use any
         # desired button of your choice
